@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statesvill Bank</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; transition: background 0.3s, color 0.3s; }
+    body.dark { background: #1a1a2e; color: #e0e0e0; }
+
+    .container { display: flex; min-height: 100vh; }
+    .sidebar { width: 250px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; overflow-y: auto; }
+    body.dark .sidebar { background: linear-gradient(135deg, #0f1b2e 0%, #1a2f4a 100%); }
+
+    .logo { font-size: 24px; font-weight: 700; margin-bottom: 30px; }
+    .nav-menu { list-style: none; }
+    .nav-item { margin-bottom: 8px; }
+    .nav-btn { width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; text-align: left; }
+    .nav-btn:hover { background: rgba(255,255,255,0.2); }
+    .nav-btn.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+
+    .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e0e7ff; }
+    body.dark .header { border-bottom-color: #444; }
+    .header h1 { font-size: 28px; font-weight: 600; }
+
+    .btn-icon { width: 40px; height: 40px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; font-size: 18px; transition: all 0.2s; }
+    body.dark .btn-icon { background: #333; color: white; }
+    .btn-icon:hover { background: #ddd; }
+    body.dark .btn-icon:hover { background: #444; }
+
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e0e7ff; }
+    body.dark .card { background: #2a2a3e; border-color: #444; }
+
+    .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
+    body.dark .card h2 { border-bottom-color: #444; }
+
+    .balance-widget { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; }
+    .balance-label { font-size: 12px; text-transform: uppercase; opacity: 0.8; letter-spacing: 0.5px; }
+    .balance-amount { font-size: 32px; font-weight: 700; margin-top: 10px; }
+
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 10px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 14px; font-family: inherit; }
+    body.dark input[type="text"], body.dark input[type="number"], body.dark input[type="password"], body.dark select { background: #333; border-color: #555; color: white; }
+
+    button { padding: 10px 16px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    button:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+    .btn-primary { width: 100%; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .transaction-row { display: grid; grid-template-columns: 1fr 1fr auto; padding: 12px 0; border-bottom: 1px solid #e0e0e0; align-items: center; }
+    body.dark .transaction-row { border-bottom-color: #444; }
+
+    .amount-positive { color: #27ae60; }
+    .amount-negative { color: #d32f2f; }
+
+    .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+    body.dark .progress-bar { background: #444; }
+    .progress-fill { height: 100%; background: #4CAF50; transition: width 0.3s; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; width: 90%; }
+    body.dark .modal-content { background: #2a2a3e; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">🏦 STATESVILL</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button class="nav-btn active" onclick="openTab('dashboard')">📊 Dashboard</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('transactions')">📋 Transactions</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('goals')">🎯 Goals</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('budget')">💰 Budget</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('analytics')">📊 Analytics</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('loans')">🏦 Loans</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('tools')">🔧 Tools</button></li>
+        <li class="nav-item"><button class="nav-btn" onclick="openTab('settings')">⚙️ Settings</button></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <h1 id="sectionTitle">Dashboard</h1>
+        <button class="btn-icon" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="tab-content active">
+        <div class="balance-widget">
+          <div class="balance-label">Account Balance</div>
+          <div class="balance-amount" id="mainBalance">$5,000.00</div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h2>Quick Stats</h2>
+            <div style="font-size: 14px; line-height: 2;">
+              <div><strong id="txnCount">0</strong> Transactions</div>
+              <div><strong id="avgTxn">$0.00</strong> Avg Transaction</div>
+              <div><strong id="totalSpent">$0.00</strong> Total Spent</div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Savings Goals</h2>
+            <div id="goalsQuick" style="font-size: 13px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions -->
+      <div id="transactions" class="tab-content">
+        <div class="card">
+          <h2>Add Transaction</h2>
+          <div class="form-group"><label>Type</label><input type="text" id="txnType" placeholder="e.g., Salary, Grocery"></div>
+          <div class="form-group"><label>Amount</label><input type="number" id="txnAmount" placeholder="0.00" step="0.01"></div>
+          <button class="btn-primary" onclick="addTransaction()">Add</button>
+        </div>
+        <div class="card">
+          <h2>All Transactions</h2>
+          <div id="allTransactions"></div>
+        </div>
+      </div>
+
+      <!-- Goals -->
+      <div id="goals" class="tab-content">
+        <div class="card">
+          <h2>Create Goal</h2>
+          <div class="form-group"><label>Goal Name</label><input type="text" id="goalName" placeholder="e.g., Vacation"></div>
+          <div class="form-group"><label>Target Amount ($)</label><input type="number" id="goalTarget" placeholder="0.00" step="0.01"></div>
+          <button class="btn-primary" onclick="createGoal()">Create</button>
+        </div>
+        <div class="card">
+          <h2>My Goals</h2>
+          <div id="goalsList"></div>
+        </div>
+      </div>
+
+      <!-- Budget -->
+      <div id="budget" class="tab-content">
+        <div class="card">
+          <h2>Create Budget</h2>
+          <div class="form-group"><label>Category</label><input type="text" id="budgetCategory" placeholder="e.g., Food, Utilities"></div>
+          <div class="form-group"><label>Monthly Limit ($)</label><input type="number" id="budgetLimit" placeholder="0.00" step="0.01"></div>
+          <button class="btn-primary" onclick="createBudget()">Create</button>
+        </div>
+        <div class="card">
+          <h2>Budgets</h2>
+          <div id="budgetsList"></div>
+        </div>
+      </div>
+
+      <!-- Analytics -->
+      <div id="analytics" class="tab-content">
+        <div class="card">
+          <h2>Spending Trends</h2>
+          <div id="spendingTrends" style="font-size: 13px;"></div>
+        </div>
+        <div class="card">
+          <h2>Financial Health</h2>
+          <div id="healthScore" style="font-size: 18px; font-weight: bold; color: #4CAF50;">--</div>
+        </div>
+      </div>
+
+      <!-- Loans -->
+      <div id="loans" class="tab-content">
+        <div class="card">
+          <h2>Loan Calculator</h2>
+          <div class="form-group"><label>Loan Amount ($)</label><input type="number" id="loanAmount" placeholder="0.00" step="0.01"></div>
+          <div class="form-group"><label>Interest Rate (% APR)</label><input type="number" id="loanRate" placeholder="0.00" step="0.01"></div>
+          <div class="form-group"><label>Loan Term (months)</label><input type="number" id="loanTerm" placeholder="0" step="1"></div>
+          <button class="btn-primary" onclick="calculateLoan()">Calculate</button>
+          <div id="loanResult"></div>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <div id="tools" class="tab-content">
+        <div class="card">
+          <h2>Financial Calculators</h2>
+          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('savings')">💾 Savings</button>
+          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('compound')">📈 Compound Interest</button>
+          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('invest')">💹 Investment</button>
+          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('mortgage')">🏡 Mortgage</button>
+          <button class="btn-primary" style="width: 100%;" onclick="openCalc('retirement')">👴 Retirement</button>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div id="settings" class="tab-content">
+        <div class="card">
+          <h2>Settings</h2>
+          <button class="btn-primary" style="margin-bottom: 8px;" onclick="exportData()">📥 Export Data</button>
+          <button class="btn-primary" onclick="resetData()">🔄 Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data Management
+    const defaultData = {
+      balance: 5000,
+      transactions: [],
+      goals: [],
+      budgets: [],
+      isDarkMode: false
+    };
+
+    let data = JSON.parse(localStorage.getItem('statesvill')) || defaultData;
+
+    function saveData() { localStorage.setItem('statesvill', JSON.stringify(data)); }
+    function loadData() { data = JSON.parse(localStorage.getItem('statesvill')) || defaultData; updateUI(); }
+
+    // UI Functions
+    function openTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const titles = { 'dashboard': 'Dashboard', 'transactions': 'Transactions', 'goals': 'Goals', 'budget': 'Budget', 'analytics': 'Analytics', 'loans': 'Loans', 'tools': 'Tools', 'settings': 'Settings' };
+      document.getElementById('sectionTitle').textContent = titles[tabName];
+    }
+
+    function updateUI() {
+      document.getElementById('mainBalance').textContent = '$' + data.balance.toFixed(2);
+
+      const txns = data.transactions || [];
+      document.getElementById('txnCount').textContent = txns.length;
+      const avgTxn = txns.length > 0 ? txns.reduce((sum, t) => sum + Math.abs(t.amount), 0) / txns.length : 0;
+      document.getElementById('avgTxn').textContent = '$' + avgTxn.toFixed(2);
+      const totalSpent = txns.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      document.getElementById('totalSpent').textContent = '$' + totalSpent.toFixed(2);
+
+      updateTransactions();
+      updateGoals();
+      updateBudgets();
+      updateAnalytics();
+    }
+
+    function updateTransactions() {
+      const html = (data.transactions || []).slice().reverse().map(t => `
+        <div class="transaction-row">
+          <div><strong>${t.type}</strong></div>
+          <div></div>
+          <div class="amount-${t.amount >= 0 ? 'positive' : 'negative'}">${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}</div>
+        </div>
+      `).join('');
+      document.getElementById('allTransactions').innerHTML = html || '<p>No transactions</p>';
+    }
+
+    function addTransaction() {
+      const type = document.getElementById('txnType').value;
+      const amount = parseFloat(document.getElementById('txnAmount').value);
+      if (!type || !amount) { alert('Enter type and amount'); return; }
+      data.transactions.push({ type, amount, date: new Date().toLocaleDateString() });
+      data.balance += amount;
+      saveData();
+      updateUI();
+      document.getElementById('txnType').value = '';
+      document.getElementById('txnAmount').value = '';
+    }
+
+    function updateGoals() {
+      const html = (data.goals || []).map(g => {
+        const pct = Math.min(100, (g.current / g.target * 100).toFixed(0));
+        return `<div style="padding: 10px; background: #f9f9f9; margin-bottom: 10px; border-radius: 6px;">
+          <strong>${g.name}</strong><br>$${g.current.toFixed(2)} / $${g.target.toFixed(2)} (${pct}%)<br>
+          <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%;"></div></div>
+        </div>`;
+      }).join('');
+      document.getElementById('goalsList').innerHTML = html || '<p>No goals</p>';
+    }
+
+    function createGoal() {
+      const name = document.getElementById('goalName').value;
+      const target = parseFloat(document.getElementById('goalTarget').value);
+      if (!name || !target) { alert('Enter name and target'); return; }
+      if (!data.goals) data.goals = [];
+      data.goals.push({ name, target, current: 0 });
+      saveData();
+      updateGoals();
+      document.getElementById('goalName').value = '';
+      document.getElementById('goalTarget').value = '';
+    }
+
+    function updateBudgets() {
+      const html = (data.budgets || []).map(b => {
+        const pct = Math.min(100, (b.spent / b.limit * 100).toFixed(0));
+        const status = pct > 90 ? '🔴' : pct > 75 ? '🟡' : '🟢';
+        return `<div style="padding: 10px; background: #f9f9f9; margin-bottom: 10px; border-radius: 6px;">
+          <strong>${b.category}</strong> ${status}<br>
+          $${b.spent.toFixed(2)} / $${b.limit.toFixed(2)} (${pct}%)<br>
+          <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%; background: ${pct > 90 ? '#d32f2f' : pct > 75 ? '#ffc107' : '#4CAF50'};"></div></div>
+        </div>`;
+      }).join('');
+      document.getElementById('budgetsList').innerHTML = html || '<p>No budgets</p>';
+    }
+
+    function createBudget() {
+      const category = document.getElementById('budgetCategory').value;
+      const limit = parseFloat(document.getElementById('budgetLimit').value);
+      if (!category || !limit) { alert('Enter category and limit'); return; }
+      if (!data.budgets) data.budgets = [];
+      data.budgets.push({ category, limit, spent: 0 });
+      saveData();
+      updateBudgets();
+      document.getElementById('budgetCategory').value = '';
+      document.getElementById('budgetLimit').value = '';
+    }
+
+    function updateAnalytics() {
+      const txns = data.transactions || [];
+      const income = txns.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+      const expenses = Math.abs(txns.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0));
+      const savingsRate = income > 0 ? ((income - expenses) / income * 100).toFixed(1) : 0;
+
+      document.getElementById('spendingTrends').innerHTML = `
+        <p><strong>Income:</strong> $${income.toFixed(2)}</p>
+        <p><strong>Expenses:</strong> $${expenses.toFixed(2)}</p>
+        <p><strong>Net:</strong> $${(income - expenses).toFixed(2)}</p>
+        <p><strong>Savings Rate:</strong> ${savingsRate}%</p>
+      `;
+
+      const healthScore = Math.min(100, Math.max(0, (data.balance / 5000 * 50 + savingsRate * 0.5).toFixed(0)));
+      document.getElementById('healthScore').innerHTML = `${healthScore}/100 - ${healthScore > 75 ? '✅ Excellent' : healthScore > 50 ? '👍 Good' : '⚠️ Fair'}`;
+    }
+
+    function calculateLoan() {
+      const principal = parseFloat(document.getElementById('loanAmount').value);
+      const rate = parseFloat(document.getElementById('loanRate').value) / 100 / 12;
+      const months = parseInt(document.getElementById('loanTerm').value);
+
+      if (!principal || !rate || !months) { alert('Enter all values'); return; }
+
+      const monthlyPayment = principal * (rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
+      const totalPayable = monthlyPayment * months;
+      const totalInterest = totalPayable - principal;
+
+      document.getElementById('loanResult').innerHTML = `
+        <div style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border-left: 4px solid #28a745;">
+          <p><strong>Monthly Payment:</strong> $${monthlyPayment.toFixed(2)}</p>
+          <p><strong>Total Payable:</strong> $${totalPayable.toFixed(2)}</p>
+          <p><strong>Total Interest:</strong> $${totalInterest.toFixed(2)}</p>
+        </div>
+      `;
+    }
+
+    function openCalc(type) {
+      let result = '';
+      if (type === 'savings') {
+        const monthly = prompt('Monthly savings ($):');
+        const years = prompt('Years:');
+        if (monthly && years) result = `After ${years} years: $${(monthly * 12 * years * 1.05).toFixed(2)}`;
+      } else if (type === 'compound') {
+        const principal = prompt('Principal ($):');
+        const rate = prompt('Rate (%):');
+        const years = prompt('Years:');
+        if (principal && rate && years) result = `Future value: $${(principal * Math.pow(1 + rate/100, years)).toFixed(2)}`;
+      } else if (type === 'invest') {
+        const invested = prompt('Amount ($):');
+        const ret = prompt('Annual return (%):');
+        const years = prompt('Years:');
+        if (invested && ret && years) result = `Value: $${(invested * Math.pow(1 + ret/100, years)).toFixed(2)}`;
+      } else if (type === 'mortgage') {
+        const home = prompt('Home price ($):');
+        const down = prompt('Down payment ($):');
+        const rate = prompt('Rate (%):');
+        if (home && down && rate) {
+          const principal = home - down;
+          const monthly_rate = rate/100/12;
+          const months = 360;
+          const payment = principal * (monthly_rate * Math.pow(1 + monthly_rate, months)) / (Math.pow(1 + monthly_rate, months) - 1);
+          result = `Monthly payment: $${payment.toFixed(2)}`;
+        }
+      } else if (type === 'retirement') {
+        const age = prompt('Current age:');
+        const ret_age = prompt('Retirement age:');
+        const savings = prompt('Current savings ($):');
+        const contrib = prompt('Annual contribution ($):');
+        if (age && ret_age && savings && contrib) {
+          const years = ret_age - age;
+          const total = savings * Math.pow(1.07, years) + contrib * ((Math.pow(1.07, years) - 1) / 0.07);
+          result = `Projected: $${total.toFixed(2)}`;
+        }
+      }
+      if (result) alert(result);
+    }
+
+    function toggleDarkMode() {
+      data.isDarkMode = !data.isDarkMode;
+      document.body.classList.toggle('dark');
+      saveData();
+    }
+
+    function exportData() {
+      const csv = 'Type,Amount,Date\n' + (data.transactions || []).map(t => `${t.type},${t.amount},${t.date}`).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'statesvill-bank-export.csv';
+      a.click();
+      alert('✅ Exported!');
+    }
+
+    function resetData() {
+      if (confirm('Reset all data?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      if (data.isDarkMode) document.body.classList.add('dark');
+    });
+  </script>
+</body>
+</html>

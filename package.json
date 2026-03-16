@@ -1,0 +1,33 @@
+{
+  "name": "statesvill-bank",
+  "version": "1.0.0",
+  "description": "Statesvill Bank - Professional Banking Application",
+  "author": "Statesvill <statesvill@bank.local>",
+  "homepage": "https://statesvillbank.local",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.statesvillbank.app",
+    "productName": "Statesvill Bank",
+    "files": [
+      "src/**/*",
+      "node_modules/**/*"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "maintainer": "Statesvill <statesvill@bank.local>"
+    }
+  }
+}
