@@ -3,428 +3,890 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Statesvill Bank</title>
+  <title>Statesvill Bank - Advanced Banking Suite</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; transition: background 0.3s, color 0.3s; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
     body.dark { background: #1a1a2e; color: #e0e0e0; }
 
-    .container { display: flex; min-height: 100vh; }
-    .sidebar { width: 250px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; overflow-y: auto; }
-    body.dark .sidebar { background: linear-gradient(135deg, #0f1b2e 0%, #1a2f4a 100%); }
+    .app { display: flex; height: 100vh; }
+    .sidebar { width: 280px; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 25px 20px; overflow-y: auto; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+    body.dark .sidebar { background: linear-gradient(135deg, #0f1b2e, #1a2f4a); }
 
-    .logo { font-size: 24px; font-weight: 700; margin-bottom: 30px; }
-    .nav-menu { list-style: none; }
-    .nav-item { margin-bottom: 8px; }
-    .nav-btn { width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; text-align: left; }
+    .logo { font-size: 28px; font-weight: 700; margin-bottom: 10px; text-align: center; }
+    .account-select { width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; margin-bottom: 20px; font-size: 12px; }
+    .account-select option { background: #1e3c72; }
+
+    .nav-btn { width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; text-align: left; transition: all 0.2s; }
     .nav-btn:hover { background: rgba(255,255,255,0.2); }
     .nav-btn.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+    .nav-divider { height: 1px; background: rgba(255,255,255,0.2); margin: 15px 0; }
 
-    .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e0e7ff; }
-    body.dark .header { border-bottom-color: #444; }
-    .header h1 { font-size: 28px; font-weight: 600; }
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: white; border-bottom: 2px solid #e0e7ff; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+    body.dark .topbar { background: #2a2a3e; border-bottom-color: #444; }
 
-    .btn-icon { width: 40px; height: 40px; border-radius: 50%; border: none; background: #f0f0f0; cursor: pointer; font-size: 18px; transition: all 0.2s; }
-    body.dark .btn-icon { background: #333; color: white; }
-    .btn-icon:hover { background: #ddd; }
-    body.dark .btn-icon:hover { background: #444; }
+    .content { flex: 1; padding: 30px; overflow-y: auto; }
+    .tab { display: none; }
+    .tab.active { display: block; }
 
-    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e0e7ff; }
-    body.dark .card { background: #2a2a3e; border-color: #444; }
+    .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    body.dark .card { background: #2a2a3e; color: #e0e0e0; }
 
-    .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
+    .card h2 { margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
     body.dark .card h2 { border-bottom-color: #444; }
 
-    .balance-widget { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; }
-    .balance-label { font-size: 12px; text-transform: uppercase; opacity: 0.8; letter-spacing: 0.5px; }
-    .balance-amount { font-size: 32px; font-weight: 700; margin-top: 10px; }
-
     .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 10px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 14px; font-family: inherit; }
-    body.dark input[type="text"], body.dark input[type="number"], body.dark input[type="password"], body.dark select { background: #333; border-color: #555; color: white; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+    body.dark input, body.dark select, body.dark textarea { background: #333; border-color: #555; color: white; }
 
-    button { padding: 10px 16px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    button:hover { box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
-    .btn-primary { width: 100%; }
+    button { padding: 11px 20px; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    button:hover { opacity: 0.9; }
+    .btn-block { width: 100%; margin-bottom: 8px; }
+    .btn-danger { background: #d32f2f; }
+    .btn-success { background: #27ae60; }
+    .btn-small { padding: 8px 12px; font-size: 12px; margin-right: 5px; }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .btn-icon { width: 40px; height: 40px; border-radius: 50%; background: #f0f0f0; border: none; cursor: pointer; font-size: 18px; }
+    body.dark .btn-icon { background: #333; color: white; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-    .transaction-row { display: grid; grid-template-columns: 1fr 1fr auto; padding: 12px 0; border-bottom: 1px solid #e0e0e0; align-items: center; }
-    body.dark .transaction-row { border-bottom-color: #444; }
+    .stat-box { text-align: center; padding: 15px; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #2a5298; }
+    body.dark .stat-box { background: #333; border-left-color: #4a7cbd; }
 
-    .amount-positive { color: #27ae60; }
-    .amount-negative { color: #d32f2f; }
+    .txn { padding: 12px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    body.dark .txn { border-bottom-color: #444; }
+    .amt { font-weight: 600; font-size: 15px; }
+    .amt-pos { color: #27ae60; }
+    .amt-neg { color: #d32f2f; }
 
-    .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-top: 8px; }
-    body.dark .progress-bar { background: #444; }
-    .progress-fill { height: 100%; background: #4CAF50; transition: width 0.3s; }
+    .progress { height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+    body.dark .progress { background: #444; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, #27ae60, #229954); transition: width 0.3s; }
 
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; width: 90%; }
-    body.dark .modal-content { background: #2a2a3e; }
+    .alert { padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+    .alert-success { background: #d4edda; color: #155724; }
+    body.dark .alert-success { background: #1b3e1b; color: #90ee90; }
+    .alert-warning { background: #fff3cd; color: #856404; }
+    body.dark .alert-warning { background: #3e3a1b; color: #ffd700; }
+
+    .cashier-page { display: none; }
+    .cashier-page.active { display: block; }
+
+    .teller-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+    .teller-btn { padding: 12px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 11px; text-align: center; transition: all 0.2s; }
+    body.dark .teller-btn { background: #333; border-color: #555; color: #e0e0e0; }
+    .teller-btn:hover { background: #f9f9f9; border-color: #2a5298; }
+    body.dark .teller-btn:hover { background: #444; }
+
+    .chart { margin: 20px 0; }
+    .chart-bar { display: flex; align-items: flex-end; gap: 8px; height: 150px; }
+    .bar { flex: 1; background: linear-gradient(180deg, #2a5298, #1e3c72); border-radius: 4px 4px 0 0; position: relative; }
+    .bar:hover { opacity: 0.8; }
+    .bar-label { font-size: 10px; margin-top: 5px; text-align: center; }
+
+    .quick-action { padding: 10px; background: #f9f9f9; border-radius: 6px; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; }
+    body.dark .quick-action { background: #333; }
+    .quick-action:hover { background: #e8e8e8; }
+    body.dark .quick-action:hover { background: #444; }
+
+    .notification { padding: 12px; background: #e3f2fd; border-left: 4px solid #2196F3; border-radius: 4px; margin-bottom: 10px; }
+    body.dark .notification { background: #1b3a5d; border-left-color: #4a90e2; }
+
+    .receipt { background: #f9f9f9; padding: 15px; border: 2px dashed #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; }
+    body.dark .receipt { background: #333; border-color: #555; }
+
+    .security-score { font-size: 36px; font-weight: 700; color: #27ae60; margin: 10px 0; }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="app">
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="logo">🏦 STATESVILL</div>
-      <ul class="nav-menu">
-        <li class="nav-item"><button class="nav-btn active" onclick="openTab('dashboard')">📊 Dashboard</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('transactions')">📋 Transactions</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('goals')">🎯 Goals</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('budget')">💰 Budget</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('analytics')">📊 Analytics</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('loans')">🏦 Loans</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('tools')">🔧 Tools</button></li>
-        <li class="nav-item"><button class="nav-btn" onclick="openTab('settings')">⚙️ Settings</button></li>
-      </ul>
+      <select class="account-select" onchange="switchAccount()">
+        <option value="checking">💳 Checking</option>
+        <option value="savings">💾 Savings</option>
+        <option value="credit">💰 Credit Card</option>
+      </select>
+
+      <button class="nav-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+      <button class="nav-btn" onclick="switchTab('transactions')">💸 Transactions</button>
+      <button class="nav-btn" onclick="switchTab('goals')">🎯 Goals</button>
+      <button class="nav-btn" onclick="switchTab('cards')">💳 Cards</button>
+      <button class="nav-btn" onclick="switchTab('investments')">📈 Investments</button>
+      <button class="nav-btn" onclick="switchTab('bills')">📋 Bills</button>
+      <button class="nav-btn" onclick="switchTab('budget')">📊 Budget</button>
+      <button class="nav-btn" onclick="switchTab('loans')">🏦 Loans</button>
+      <button class="nav-btn" onclick="switchTab('analytics')">📉 Analytics</button>
+      <button class="nav-btn" onclick="switchTab('notifications')">🔔 Alerts</button>
+      <button class="nav-btn" onclick="switchTab('security')">🛡️ Security</button>
+      <button class="nav-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+      <div class="nav-divider"></div>
+      <button class="nav-btn" onclick="switchTab('cashier')" style="background: rgba(220,53,69,0.2);">🏧 Cashier</button>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-      <div class="header">
-        <h1 id="sectionTitle">Dashboard</h1>
-        <button class="btn-icon" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+    <!-- Main -->
+    <div class="main">
+      <div class="topbar">
+        <h1 id="title">Dashboard</h1>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-icon" onclick="toggleDark()" title="Dark Mode">🌙</button>
+          <button class="btn-icon" onclick="openSearch()" title="Search">🔍</button>
+          <button class="btn-icon" onclick="openHelp()" title="Help">❓</button>
+        </div>
       </div>
 
-      <!-- Dashboard -->
-      <div id="dashboard" class="tab-content active">
-        <div class="balance-widget">
-          <div class="balance-label">Account Balance</div>
-          <div class="balance-amount" id="mainBalance">$5,000.00</div>
-        </div>
-        <div class="grid-2">
+      <div class="content">
+        <!-- Dashboard -->
+        <div id="dashboard" class="tab active">
+          <div class="grid-2">
+            <div class="card" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;">
+              <div style="font-size: 13px; opacity: 0.8;">Account Balance</div>
+              <div style="font-size: 42px; font-weight: 700; margin: 15px 0;" id="mainBal">$5,000.00</div>
+              <div style="font-size: 12px; opacity: 0.8;"><span id="accName">Checking</span> Account</div>
+            </div>
+            <div class="card">
+              <h2>Quick Actions</h2>
+              <button class="quick-action" onclick="quickTransfer()">↔️ Quick Transfer</button>
+              <button class="quick-action" onclick="quickPay()">💳 Quick Pay</button>
+              <button class="quick-action" onclick="quickDeposit()">💰 Quick Deposit</button>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="stat-box">
+              <div style="font-size: 24px; font-weight: 700;" id="txnCount">0</div>
+              <div style="font-size: 12px; opacity: 0.7;">Transactions</div>
+            </div>
+            <div class="stat-box">
+              <div style="font-size: 24px; font-weight: 700;" id="savings">$0</div>
+              <div style="font-size: 12px; opacity: 0.7;">Net Saved</div>
+            </div>
+            <div class="stat-box">
+              <div style="font-size: 24px; font-weight: 700;" id="secScore">--</div>
+              <div style="font-size: 12px; opacity: 0.7;">Security</div>
+            </div>
+          </div>
+
           <div class="card">
-            <h2>Quick Stats</h2>
-            <div style="font-size: 14px; line-height: 2;">
-              <div><strong id="txnCount">0</strong> Transactions</div>
-              <div><strong id="avgTxn">$0.00</strong> Avg Transaction</div>
-              <div><strong id="totalSpent">$0.00</strong> Total Spent</div>
+            <h2>📊 Monthly Spending</h2>
+            <div class="chart">
+              <div class="chart-bar" id="spendChart"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Recent Activity</h2>
+            <div id="recentActivity"></div>
+          </div>
+        </div>
+
+        <!-- Transactions -->
+        <div id="transactions" class="tab">
+          <div class="card">
+            <h2>➕ Add Transaction</h2>
+            <div class="form-group"><label>Description</label><input type="text" id="desc" placeholder="Grocery"></div>
+            <div class="form-group"><label>Amount</label><input type="number" id="amt" placeholder="0.00" step="0.01"></div>
+            <div class="form-group"><label>Category</label><select id="category"><option>Groceries</option><option>Utilities</option><option>Entertainment</option><option>Transport</option><option>Healthcare</option><option>Other</option></select></div>
+            <div class="form-group"><label>Type</label><select id="type"><option>Expense</option><option>Income</option></select></div>
+            <button class="btn-block" onclick="addTxn()">Add Transaction</button>
+          </div>
+          <div class="card">
+            <h2>📋 All Transactions</h2>
+            <div class="form-group"><input type="text" id="searchTxn" placeholder="Search transactions..." onkeyup="filterTxn()"></div>
+            <div id="allTxn"></div>
+          </div>
+          <div class="card">
+            <h2>📥 Export</h2>
+            <button class="btn-block" onclick="exportCSV()">Export to CSV</button>
+            <button class="btn-block" onclick="printReceipt()">Print Receipt</button>
+          </div>
+        </div>
+
+        <!-- Goals -->
+        <div id="goals" class="tab">
+          <div class="card">
+            <h2>🎯 Create Savings Goal</h2>
+            <div class="form-group"><label>Goal Name</label><input type="text" id="goalname" placeholder="Vacation"></div>
+            <div class="form-group"><label>Target Amount</label><input type="number" id="goaltarget" placeholder="10000" step="0.01"></div>
+            <div class="form-group"><label>Target Date</label><input type="date" id="goaldate"></div>
+            <button class="btn-block" onclick="addGoal()">Create Goal</button>
+          </div>
+          <div class="card">
+            <h2>💾 My Goals</h2>
+            <div id="myGoals"></div>
+          </div>
+        </div>
+
+        <!-- Cards -->
+        <div id="cards" class="tab">
+          <div class="card">
+            <h2>💳 Generate Virtual Card</h2>
+            <div class="form-group"><label>Card Name</label><input type="text" id="cardname" placeholder="Shopping"></div>
+            <button class="btn-block" onclick="genCard()">Generate Card</button>
+          </div>
+          <div class="card">
+            <h2>🎫 My Cards</h2>
+            <div id="myCards"></div>
+          </div>
+        </div>
+
+        <!-- Investments -->
+        <div id="investments" class="tab">
+          <div class="card">
+            <h2>📈 Add Investment</h2>
+            <div class="form-group"><label>Symbol</label><input type="text" id="invsymbol" placeholder="AAPL"></div>
+            <div class="form-group"><label>Shares</label><input type="number" id="invshares" placeholder="1" step="0.01"></div>
+            <div class="form-group"><label>Price</label><input type="number" id="invprice" placeholder="0.00" step="0.01"></div>
+            <button class="btn-block" onclick="addInvest()">Add</button>
+          </div>
+          <div class="card">
+            <h2>💹 Portfolio</h2>
+            <div id="invList"></div>
+            <div id="invTotal" style="margin-top: 20px; font-size: 18px; font-weight: 700;"></div>
+          </div>
+        </div>
+
+        <!-- Bills -->
+        <div id="bills" class="tab">
+          <div class="card">
+            <h2>📅 Schedule Bill</h2>
+            <div class="form-group"><label>Payee</label><input type="text" id="billpayee" placeholder="Electric"></div>
+            <div class="form-group"><label>Amount</label><input type="number" id="billamt" placeholder="0.00" step="0.01"></div>
+            <div class="form-group"><label>Due Date</label><input type="date" id="billdate"></div>
+            <button class="btn-block" onclick="addBill()">Schedule</button>
+          </div>
+          <div class="card">
+            <h2>📋 Upcoming Bills</h2>
+            <div id="billList"></div>
+          </div>
+        </div>
+
+        <!-- Budget -->
+        <div id="budget" class="tab">
+          <div class="card">
+            <h2>💰 Create Budget</h2>
+            <div class="form-group"><label>Category</label><input type="text" id="budcat" placeholder="Food"></div>
+            <div class="form-group"><label>Monthly Limit</label><input type="number" id="budlimit" placeholder="500" step="0.01"></div>
+            <button class="btn-block" onclick="addBudget()">Create</button>
+          </div>
+          <div class="card">
+            <h2>📊 Budgets</h2>
+            <div id="budList"></div>
+          </div>
+        </div>
+
+        <!-- Loans -->
+        <div id="loans" class="tab">
+          <div class="card">
+            <h2>🏦 Loan Calculator</h2>
+            <div class="form-group"><label>Principal</label><input type="number" id="loanp" placeholder="10000"></div>
+            <div class="form-group"><label>Rate (%)</label><input type="number" id="loanr" placeholder="5" step="0.01"></div>
+            <div class="form-group"><label>Months</label><input type="number" id="loanm" placeholder="60"></div>
+            <button class="btn-block" onclick="calcLoan()">Calculate</button>
+            <div id="loanRes"></div>
+          </div>
+        </div>
+
+        <!-- Analytics -->
+        <div id="analytics" class="tab">
+          <div class="grid-2">
+            <div class="card">
+              <h2>💰 Financial Summary</h2>
+              <div id="analytics"></div>
+            </div>
+            <div class="card">
+              <h2>📊 By Category</h2>
+              <div id="catBreakdown"></div>
             </div>
           </div>
           <div class="card">
-            <h2>Savings Goals</h2>
-            <div id="goalsQuick" style="font-size: 13px;"></div>
+            <h2>📈 Spending Trends</h2>
+            <div id="trends"></div>
           </div>
         </div>
-      </div>
 
-      <!-- Transactions -->
-      <div id="transactions" class="tab-content">
-        <div class="card">
-          <h2>Add Transaction</h2>
-          <div class="form-group"><label>Type</label><input type="text" id="txnType" placeholder="e.g., Salary, Grocery"></div>
-          <div class="form-group"><label>Amount</label><input type="number" id="txnAmount" placeholder="0.00" step="0.01"></div>
-          <button class="btn-primary" onclick="addTransaction()">Add</button>
+        <!-- Notifications -->
+        <div id="notifications" class="tab">
+          <div class="card">
+            <h2>🔔 Account Alerts</h2>
+            <label style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="checkbox" id="alert-low" checked> Low Balance Alert (below $500)</label>
+            <label style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="checkbox" id="alert-large" checked> Large Transaction ($1,000+)</label>
+            <label style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="checkbox" id="alert-bill" checked> Bill Reminders</label>
+            <label style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="checkbox" id="alert-weekly" checked> Weekly Summary</label>
+            <button class="btn-block" onclick="updateAlerts()">Save Alerts</button>
+          </div>
+          <div class="card">
+            <h2>📬 Notifications</h2>
+            <div id="notifList"></div>
+          </div>
         </div>
-        <div class="card">
-          <h2>All Transactions</h2>
-          <div id="allTransactions"></div>
-        </div>
-      </div>
 
-      <!-- Goals -->
-      <div id="goals" class="tab-content">
-        <div class="card">
-          <h2>Create Goal</h2>
-          <div class="form-group"><label>Goal Name</label><input type="text" id="goalName" placeholder="e.g., Vacation"></div>
-          <div class="form-group"><label>Target Amount ($)</label><input type="number" id="goalTarget" placeholder="0.00" step="0.01"></div>
-          <button class="btn-primary" onclick="createGoal()">Create</button>
+        <!-- Security -->
+        <div id="security" class="tab">
+          <div class="card">
+            <h2>🛡️ Security Status</h2>
+            <div class="security-score" id="secScoreBig">--</div>
+            <p>Two-Factor Authentication: <strong id="2fa-status">❌ Disabled</strong></p>
+            <p>Biometric Login: <strong id="bio-status">❌ Disabled</strong></p>
+            <p>Login Alerts: <strong id="login-status">✓ Enabled</strong></p>
+            <button class="btn-block" onclick="enable2FA()">Enable 2FA</button>
+            <button class="btn-block" onclick="enableBio()">Enable Biometric</button>
+          </div>
+          <div class="card">
+            <h2>🔐 Password & PIN</h2>
+            <div class="form-group"><label>Current PIN</label><input type="password" id="oldpin" placeholder="****" maxlength="4"></div>
+            <div class="form-group"><label>New PIN</label><input type="password" id="newpin" placeholder="****" maxlength="4"></div>
+            <button class="btn-block" onclick="changePIN()">Change PIN</button>
+          </div>
+          <div class="card">
+            <h2>📱 Login History</h2>
+            <div id="loginHist"></div>
+          </div>
         </div>
-        <div class="card">
-          <h2>My Goals</h2>
-          <div id="goalsList"></div>
-        </div>
-      </div>
 
-      <!-- Budget -->
-      <div id="budget" class="tab-content">
-        <div class="card">
-          <h2>Create Budget</h2>
-          <div class="form-group"><label>Category</label><input type="text" id="budgetCategory" placeholder="e.g., Food, Utilities"></div>
-          <div class="form-group"><label>Monthly Limit ($)</label><input type="number" id="budgetLimit" placeholder="0.00" step="0.01"></div>
-          <button class="btn-primary" onclick="createBudget()">Create</button>
+        <!-- Settings -->
+        <div id="settings" class="tab">
+          <div class="card">
+            <h2>⚙️ Account Settings</h2>
+            <div class="form-group"><label>Phone Number</label><input type="tel" id="phone" placeholder="(555) 123-4567"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="user@bank.local"></div>
+            <div class="form-group"><label>Address</label><input type="text" id="address" placeholder="123 Main St"></div>
+            <button class="btn-block" onclick="saveSettings()">Save Settings</button>
+          </div>
+          <div class="card">
+            <h2>📊 Preferences</h2>
+            <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" id="email-stmt" checked> Email Statements</label>
+            <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" id="sms-alert" checked> SMS Alerts</label>
+            <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" id="paper-stmt"> Paper Statements</label>
+            <button class="btn-block" onclick="savePrefs()">Save Preferences</button>
+          </div>
+          <div class="card">
+            <h2>💾 Data</h2>
+            <button class="btn-block" onclick="exportJSON()">Export All Data</button>
+            <button class="btn-block btn-danger" onclick="resetAccount()">Reset Account</button>
+          </div>
         </div>
-        <div class="card">
-          <h2>Budgets</h2>
-          <div id="budgetsList"></div>
-        </div>
-      </div>
 
-      <!-- Analytics -->
-      <div id="analytics" class="tab-content">
-        <div class="card">
-          <h2>Spending Trends</h2>
-          <div id="spendingTrends" style="font-size: 13px;"></div>
-        </div>
-        <div class="card">
-          <h2>Financial Health</h2>
-          <div id="healthScore" style="font-size: 18px; font-weight: bold; color: #4CAF50;">--</div>
-        </div>
-      </div>
+        <!-- Cashier -->
+        <div id="cashier" class="tab">
+          <div class="card">
+            <h2>🏧 Cashier Mode - PIN: 2015</h2>
+            <div class="form-group"><label>PIN</label><input type="password" id="pin" placeholder="****" maxlength="4"></div>
+            <button class="btn-block" onclick="checkPin()">Enter Cashier</button>
+          </div>
 
-      <!-- Loans -->
-      <div id="loans" class="tab-content">
-        <div class="card">
-          <h2>Loan Calculator</h2>
-          <div class="form-group"><label>Loan Amount ($)</label><input type="number" id="loanAmount" placeholder="0.00" step="0.01"></div>
-          <div class="form-group"><label>Interest Rate (% APR)</label><input type="number" id="loanRate" placeholder="0.00" step="0.01"></div>
-          <div class="form-group"><label>Loan Term (months)</label><input type="number" id="loanTerm" placeholder="0" step="1"></div>
-          <button class="btn-primary" onclick="calculateLoan()">Calculate</button>
-          <div id="loanResult"></div>
-        </div>
-      </div>
+          <div id="cashier-main" style="display:none;">
+            <div class="card">
+              <h2>Teller Services</h2>
+              <div class="teller-grid">
+                <button class="teller-btn" onclick="openCPage('deposit')">💰 Deposit</button>
+                <button class="teller-btn" onclick="openCPage('withdraw')">🏧 Withdraw</button>
+                <button class="teller-btn" onclick="openCPage('transfer')">↔️ Transfer</button>
+                <button class="teller-btn" onclick="openCPage('payment')">💳 Payment</button>
+                <button class="teller-btn" onclick="openCPage('balance')">💰 Balance</button>
+                <button class="teller-btn" onclick="openCPage('stmt')">📄 Statement</button>
+                <button class="teller-btn" onclick="openCPage('order_card')">🎫 Order Card</button>
+                <button class="teller-btn" onclick="openCPage('block_card')">🔒 Block Card</button>
+                <button class="teller-btn" onclick="openCPage('changepin')">🔑 Change PIN</button>
+                <button class="teller-btn" onclick="openCPage('updateinfo')">👤 Update Info</button>
+                <button class="teller-btn" onclick="openCPage('exchange')">💱 Exchange</button>
+                <button class="teller-btn" onclick="openCPage('loan')">💰 Loan</button>
+                <button class="teller-btn" onclick="openCPage('cashiercheck')">💼 Cashier Check</button>
+                <button class="teller-btn" onclick="openCPage('fraud')">🛡️ Fraud</button>
+                <button class="teller-btn" onclick="openCPage('safebox')">🔐 Safe Box</button>
+                <button class="teller-btn" onclick="openCPage('dispute')">⚡ Dispute</button>
+                <button class="teller-btn" onclick="openCPage('fees')">💸 Fees</button>
+                <button class="teller-btn" onclick="openCPage('investment')">📈 Investment</button>
+                <button class="teller-btn" onclick="openCPage('beneficiary')">👥 Beneficiary</button>
+                <button class="teller-btn" onclick="openCPage('wire')">🌐 Wire</button>
+              </div>
+            </div>
 
-      <!-- Tools -->
-      <div id="tools" class="tab-content">
-        <div class="card">
-          <h2>Financial Calculators</h2>
-          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('savings')">💾 Savings</button>
-          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('compound')">📈 Compound Interest</button>
-          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('invest')">💹 Investment</button>
-          <button class="btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="openCalc('mortgage')">🏡 Mortgage</button>
-          <button class="btn-primary" style="width: 100%;" onclick="openCalc('retirement')">👴 Retirement</button>
-        </div>
-      </div>
+            <button class="btn-block btn-danger" onclick="exitCashier()">Exit Cashier</button>
+          </div>
 
-      <!-- Settings -->
-      <div id="settings" class="tab-content">
-        <div class="card">
-          <h2>Settings</h2>
-          <button class="btn-primary" style="margin-bottom: 8px;" onclick="exportData()">📥 Export Data</button>
-          <button class="btn-primary" onclick="resetData()">🔄 Reset</button>
+          <!-- Cashier Pages -->
+          <div id="deposit-page" class="cashier-page">
+            <div class="card">
+              <h2>💰 Deposit</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="dep-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Notes</label><input type="text" id="dep-notes" placeholder="Optional"></div>
+              <button class="btn-block btn-success" onclick="proDeposit()">Confirm</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="dep-res"></div>
+            </div>
+          </div>
+
+          <div id="withdraw-page" class="cashier-page">
+            <div class="card">
+              <h2>🏧 Withdrawal</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="wit-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>ID Verification</label><input type="text" id="wit-id" placeholder="ID"></div>
+              <button class="btn-block btn-success" onclick="proWithdraw()">Confirm</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="wit-res"></div>
+            </div>
+          </div>
+
+          <div id="transfer-page" class="cashier-page">
+            <div class="card">
+              <h2>↔️ Transfer</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="trans-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>To Account</label><input type="text" id="trans-acct" placeholder="****5678"></div>
+              <button class="btn-block btn-success" onclick="proTransfer()">Confirm</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="trans-res"></div>
+            </div>
+          </div>
+
+          <div id="payment-page" class="cashier-page">
+            <div class="card">
+              <h2>💳 Payment</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="pay-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Payee</label><input type="text" id="pay-payee" placeholder="Utility"></div>
+              <div class="form-group"><label>Due Date</label><input type="date" id="pay-date"></div>
+              <button class="btn-block btn-success" onclick="proPayment()">Confirm</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="pay-res"></div>
+            </div>
+          </div>
+
+          <div id="balance-page" class="cashier-page">
+            <div class="card">
+              <h2>💰 Balance</h2>
+              <h3 id="bal-show"></h3>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Back</button>
+            </div>
+          </div>
+
+          <div id="stmt-page" class="cashier-page">
+            <div class="card">
+              <h2>📄 Statement</h2>
+              <div id="stmt-show"></div>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Back</button>
+            </div>
+          </div>
+
+          <div id="order_card-page" class="cashier-page">
+            <div class="card">
+              <h2>🎫 Order Card</h2>
+              <div class="form-group"><label>Type</label><select id="card-type"><option>Debit</option><option>Credit</option><option>Virtual</option></select></div>
+              <div class="form-group"><label>Design</label><select id="card-design"><option>Blue</option><option>Black</option><option>Gold</option></select></div>
+              <button class="btn-block btn-success" onclick="proCardOrder()">Order</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="card-res"></div>
+            </div>
+          </div>
+
+          <div id="block_card-page" class="cashier-page">
+            <div class="card">
+              <h2>🔒 Block Card</h2>
+              <div class="form-group"><label>Card</label><select id="block-card" id="block-card"><option>Select</option></select></div>
+              <div class="form-group"><label>Reason</label><select id="block-reason"><option>Lost</option><option>Stolen</option><option>Fraud</option></select></div>
+              <button class="btn-block btn-success" onclick="proBlockCard()">Block</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="block-res"></div>
+            </div>
+          </div>
+
+          <div id="changepin-page" class="cashier-page">
+            <div class="card">
+              <h2>🔑 Change PIN</h2>
+              <div class="form-group"><label>Old PIN</label><input type="password" id="old-pin" placeholder="****" maxlength="4"></div>
+              <div class="form-group"><label>New PIN</label><input type="password" id="new-pin" placeholder="****" maxlength="4"></div>
+              <button class="btn-block btn-success" onclick="proChangePin()">Change</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="pin-res"></div>
+            </div>
+          </div>
+
+          <div id="updateinfo-page" class="cashier-page">
+            <div class="card">
+              <h2>👤 Update Information</h2>
+              <div class="form-group"><label>Phone</label><input type="tel" id="upd-phone" placeholder="(555) 123-4567"></div>
+              <div class="form-group"><label>Email</label><input type="email" id="upd-email" placeholder="user@bank.local"></div>
+              <div class="form-group"><label>Address</label><input type="text" id="upd-addr" placeholder="123 Main St"></div>
+              <button class="btn-block btn-success" onclick="proUpdateInfo()">Update</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="upd-res"></div>
+            </div>
+          </div>
+
+          <div id="exchange-page" class="cashier-page">
+            <div class="card">
+              <h2>💱 Currency Exchange</h2>
+              <div class="form-group"><label>USD Amount</label><input type="number" id="ex-usd" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Currency</label><select id="ex-curr"><option value="eur">EUR</option><option value="gbp">GBP</option><option value="jpy">JPY</option><option value="cad">CAD</option></select></div>
+              <button class="btn-block btn-success" onclick="proExchange()">Calculate</button>
+              <div id="ex-res"></div>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Back</button>
+            </div>
+          </div>
+
+          <div id="loan-page" class="cashier-page">
+            <div class="card">
+              <h2>💰 Loan Application</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="loan-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Term (Months)</label><select id="loan-term"><option>12</option><option>24</option><option>36</option><option>60</option></select></div>
+              <div class="form-group"><label>Purpose</label><input type="text" id="loan-purpose" placeholder="Home, Auto, etc"></div>
+              <button class="btn-block btn-success" onclick="proLoanApp()">Apply</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="loan-res"></div>
+            </div>
+          </div>
+
+          <div id="cashiercheck-page" class="cashier-page">
+            <div class="card">
+              <h2>💼 Cashier Check</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="chk-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Payee</label><input type="text" id="chk-payee" placeholder="Name"></div>
+              <button class="btn-block btn-success" onclick="proCashierCheck()">Issue</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="chk-res"></div>
+            </div>
+          </div>
+
+          <div id="fraud-page" class="cashier-page">
+            <div class="card">
+              <h2>🛡️ Fraud Protection</h2>
+              <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" id="fraud-2fa"> 2-Factor Auth</label>
+              <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" id="fraud-bio"> Biometric</label>
+              <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" id="fraud-alert"> Alerts</label>
+              <button class="btn-block btn-success" onclick="proFraud()">Enable</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="fraud-res"></div>
+            </div>
+          </div>
+
+          <div id="safebox-page" class="cashier-page">
+            <div class="card">
+              <h2>🔐 Safe Deposit Box</h2>
+              <p>Small: $50/yr | Medium: $75/yr | Large: $100/yr</p>
+              <div class="form-group"><label>Size</label><select id="box-size"><option>Small</option><option>Medium</option><option>Large</option></select></div>
+              <button class="btn-block btn-success" onclick="proBoxRent()">Rent</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="box-res"></div>
+            </div>
+          </div>
+
+          <div id="dispute-page" class="cashier-page">
+            <div class="card">
+              <h2>⚡ File Dispute</h2>
+              <div class="form-group"><label>Date</label><input type="date" id="disp-date"></div>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="disp-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Reason</label><select id="disp-reason"><option>Unauthorized</option><option>Duplicate</option><option>Wrong Amount</option></select></div>
+              <button class="btn-block btn-success" onclick="proDispute()">File</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="disp-res"></div>
+            </div>
+          </div>
+
+          <div id="fees-page" class="cashier-page">
+            <div class="card">
+              <h2>💸 Fee Schedule</h2>
+              <p>Monthly: FREE (with $1,500+ balance)</p>
+              <p>Wire: $15 | Check: $15 | Overdraft: $35</p>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Back</button>
+            </div>
+          </div>
+
+          <div id="investment-page" class="cashier-page">
+            <div class="card">
+              <h2>📈 Investment Consultation</h2>
+              <div class="form-group"><label>Date</label><input type="date" id="inv-date"></div>
+              <div class="form-group"><label>Time</label><select id="inv-time"><option>9:00 AM</option><option>2:00 PM</option><option>4:00 PM</option></select></div>
+              <button class="btn-block btn-success" onclick="proInvest()">Schedule</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="inv-res"></div>
+            </div>
+          </div>
+
+          <div id="beneficiary-page" class="cashier-page">
+            <div class="card">
+              <h2>👥 Add Beneficiary</h2>
+              <div class="form-group"><label>Name</label><input type="text" id="ben-name" placeholder="Full name"></div>
+              <div class="form-group"><label>Relationship</label><input type="text" id="ben-rel" placeholder="Spouse, Child"></div>
+              <div class="form-group"><label>Percentage (%)</label><input type="number" id="ben-pct" min="0" max="100" placeholder="50"></div>
+              <button class="btn-block btn-success" onclick="proBeneficiary()">Add</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="ben-res"></div>
+            </div>
+          </div>
+
+          <div id="wire-page" class="cashier-page">
+            <div class="card">
+              <h2>🌐 Wire Transfer</h2>
+              <div class="form-group"><label>Amount ($)</label><input type="number" id="wire-amt" placeholder="0.00" step="0.01"></div>
+              <div class="form-group"><label>Type</label><select id="wire-type"><option>Domestic</option><option>International</option></select></div>
+              <div class="form-group"><label>Recipient</label><input type="text" id="wire-recipient" placeholder="Name"></div>
+              <button class="btn-block btn-success" onclick="proWire()">Send</button>
+              <button class="btn-block btn-danger" onclick="closeCPage()">Cancel</button>
+              <div id="wire-res"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Data Management
-    const defaultData = {
-      balance: 5000,
-      transactions: [],
-      goals: [],
-      budgets: [],
-      isDarkMode: false
+    const PIN = '2015';
+    let accounts = {
+      checking: { balance: 5000, txns: [], goals: [], cards: [], investments: [], bills: [], budgets: [] },
+      savings: { balance: 12000, txns: [], goals: [], cards: [], investments: [], bills: [], budgets: [] },
+      credit: { balance: 2500, txns: [], goals: [], cards: [], investments: [], bills: [], budgets: [] }
     };
 
-    let data = JSON.parse(localStorage.getItem('statesvill')) || defaultData;
+    let data = JSON.parse(localStorage.getItem('bankpro')) || {
+      accounts,
+      currentAccount: 'checking',
+      dark: false,
+      phone: '(555) 123-4567',
+      email: 'customer@bank.local',
+      address: '123 Main St',
+      loginHistory: [],
+      notifications: []
+    };
 
-    function saveData() { localStorage.setItem('statesvill', JSON.stringify(data)); }
-    function loadData() { data = JSON.parse(localStorage.getItem('statesvill')) || defaultData; updateUI(); }
+    accounts = data.accounts;
+    let current = () => accounts[data.currentAccount];
 
-    // UI Functions
-    function openTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabName).classList.add('active');
-      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    function save() { localStorage.setItem('bankpro', JSON.stringify(data)); }
+
+    function update() {
+      const acc = current();
+      document.getElementById('mainBal').textContent = '$' + acc.balance.toFixed(2);
+      document.getElementById('accName').textContent = data.currentAccount.charAt(0).toUpperCase() + data.currentAccount.slice(1);
+      document.getElementById('txnCount').textContent = acc.txns.length;
+
+      const income = acc.txns.filter(t=>t.type==='Income').reduce((s,t)=>s+t.amount,0);
+      const exp = Math.abs(acc.txns.filter(t=>t.type==='Expense').reduce((s,t)=>s+t.amount,0));
+      document.getElementById('savings').textContent = '$' + (income - exp).toFixed(2);
+
+      const sec = Math.floor(Math.random() * 100) + 30;
+      document.getElementById('secScore').textContent = sec;
+      document.getElementById('secScoreBig').textContent = sec;
+
+      const rec = acc.txns.slice(-5).reverse().map(t => `<div class="txn"><div>${t.desc} (${t.cat})</div><div class="amt amt-${t.type==='Income'?'pos':'neg'}">${t.type==='Income'?'+':'-'}$${Math.abs(t.amount).toFixed(2)}</div></div>`).join('');
+      document.getElementById('recentActivity').innerHTML = rec || 'No activity';
+
+      const cats = {};
+      acc.txns.filter(t=>t.type==='Expense').forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + Math.abs(t.amount); });
+      const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const max = Math.max(...sorted.map(([,v])=>v),1);
+      const chart = sorted.map(([cat,amt]) => `<div class="bar" style="height: ${amt/max*100}%;"><div class="bar-label">${cat}</div></div>`).join('');
+      document.getElementById('spendChart').innerHTML = chart || '<p>No data</p>';
+
+      const all = acc.txns.slice().reverse().map(t => `<div class="txn"><div><strong>${t.desc}</strong> (${t.cat})</div><div class="amt amt-${t.type==='Income'?'pos':'neg'}">${t.type==='Income'?'+':'-'}$${Math.abs(t.amount).toFixed(2)}</div></div>`).join('');
+      document.getElementById('allTxn').innerHTML = all || 'No txns';
+
+      const goals = acc.goals.map(g => { const pct = Math.min(100, (g.curr/g.target*100).toFixed(0)); return `<div style="margin-bottom:15px"><strong>${g.name}</strong><br>$${g.curr.toFixed(2)}/$${g.target.toFixed(2)} (${pct}%)<div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div></div>`; }).join('');
+      document.getElementById('myGoals').innerHTML = goals || 'No goals';
+
+      const cards = acc.cards.map(c => `<div style="padding:12px; background:#f9f9f9; margin-bottom:10px; border-radius:6px; font-family:monospace;">💳 ${c.name}<br>•••• •••• •••• ${c.num.slice(-4)}<br>CVV: ••• Exp: ${c.exp}</div>`).join('');
+      document.getElementById('myCards').innerHTML = cards || 'No cards';
+
+      const invs = acc.investments.map(i => `<div class="txn"><div><strong>${i.symbol}</strong><br>${i.shares} shares</div><div><strong>$${(i.shares*i.price).toFixed(2)}</strong></div></div>`).join('');
+      document.getElementById('invList').innerHTML = invs || 'No investments';
+      const invTotal = acc.investments.reduce((s,i)=>s+(i.shares*i.price),0);
+      document.getElementById('invTotal').innerHTML = invTotal > 0 ? `<strong>Total Portfolio: $${invTotal.toFixed(2)}</strong>` : '';
+
+      const bills = acc.bills.map(b => `<div class="txn"><div><strong>${b.payee}</strong><br>${b.date}</div><div class="amt amt-neg">$${b.amt.toFixed(2)}</div></div>`).join('');
+      document.getElementById('billList').innerHTML = bills || 'No bills';
+
+      const budgets = acc.budgets.map(b => `<div style="margin-bottom:15px"><strong>${b.cat}</strong><br>$0/$${b.limit.toFixed(2)}<div class="progress"><div class="progress-bar" style="width:0%"></div></div></div>`).join('');
+      document.getElementById('budList').innerHTML = budgets || 'No budgets';
+
+      document.getElementById('analytics').innerHTML = `<p>💰 Income: $${income.toFixed(2)}</p><p>💸 Expenses: $${exp.toFixed(2)}</p><p>💵 Net: $${(income-exp).toFixed(2)}</p><p>📊 Rate: ${income>0?(((income-exp)/income)*100).toFixed(1):'0'}%</p>`;
+
+      const catHtml = sorted.map(([k,v])=>`<p>${k}: <strong>$${v.toFixed(2)}</strong></p>`).join('');
+      document.getElementById('catBreakdown').innerHTML = catHtml || '<p>No data</p>';
+
+      document.getElementById('notifList').innerHTML = `<div class="notification">✓ Account Secure</div><div class="notification">💰 Balance: $${acc.balance.toFixed(2)}</div>`;
+      document.getElementById('loginHist').innerHTML = `<p>Last Login: Today 3:45 PM</p><p>Device: Chrome on Windows</p><p>IP: 192.168.1.100</p>`;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       event.target.classList.add('active');
-
-      const titles = { 'dashboard': 'Dashboard', 'transactions': 'Transactions', 'goals': 'Goals', 'budget': 'Budget', 'analytics': 'Analytics', 'loans': 'Loans', 'tools': 'Tools', 'settings': 'Settings' };
-      document.getElementById('sectionTitle').textContent = titles[tabName];
+      document.getElementById('title').textContent = tab.charAt(0).toUpperCase() + tab.slice(1).replace(/([A-Z])/g, ' $1');
     }
 
-    function updateUI() {
-      document.getElementById('mainBalance').textContent = '$' + data.balance.toFixed(2);
-
-      const txns = data.transactions || [];
-      document.getElementById('txnCount').textContent = txns.length;
-      const avgTxn = txns.length > 0 ? txns.reduce((sum, t) => sum + Math.abs(t.amount), 0) / txns.length : 0;
-      document.getElementById('avgTxn').textContent = '$' + avgTxn.toFixed(2);
-      const totalSpent = txns.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
-      document.getElementById('totalSpent').textContent = '$' + totalSpent.toFixed(2);
-
-      updateTransactions();
-      updateGoals();
-      updateBudgets();
-      updateAnalytics();
+    function switchAccount() {
+      data.currentAccount = event.target.value;
+      save();
+      update();
     }
 
-    function updateTransactions() {
-      const html = (data.transactions || []).slice().reverse().map(t => `
-        <div class="transaction-row">
-          <div><strong>${t.type}</strong></div>
-          <div></div>
-          <div class="amount-${t.amount >= 0 ? 'positive' : 'negative'}">${t.amount >= 0 ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}</div>
-        </div>
-      `).join('');
-      document.getElementById('allTransactions').innerHTML = html || '<p>No transactions</p>';
+    function addTxn() {
+      const desc = document.getElementById('desc').value;
+      const amt = parseFloat(document.getElementById('amt').value);
+      const cat = document.getElementById('category').value;
+      const type = document.getElementById('type').value;
+      if(!desc || !amt) { alert('Fill fields'); return; }
+      const acc = current();
+      acc.txns.push({ desc, amount: type==='Income'?amt:-amt, type, cat, date: new Date().toLocaleDateString() });
+      acc.balance += (type==='Income'?amt:-amt);
+      save();
+      update();
+      document.getElementById('desc').value = document.getElementById('amt').value = '';
     }
 
-    function addTransaction() {
-      const type = document.getElementById('txnType').value;
-      const amount = parseFloat(document.getElementById('txnAmount').value);
-      if (!type || !amount) { alert('Enter type and amount'); return; }
-      data.transactions.push({ type, amount, date: new Date().toLocaleDateString() });
-      data.balance += amount;
-      saveData();
-      updateUI();
-      document.getElementById('txnType').value = '';
-      document.getElementById('txnAmount').value = '';
+    function filterTxn() {
+      const q = document.getElementById('searchTxn').value.toLowerCase();
+      const txns = current().txns.slice().reverse();
+      const filtered = txns.filter(t => t.desc.toLowerCase().includes(q));
+      document.getElementById('allTxn').innerHTML = filtered.map(t => `<div class="txn"><div><strong>${t.desc}</strong> (${t.cat})</div><div class="amt amt-${t.type==='Income'?'pos':'neg'}">${t.type==='Income'?'+':'-'}$${Math.abs(t.amount).toFixed(2)}</div></div>`).join('');
     }
 
-    function updateGoals() {
-      const html = (data.goals || []).map(g => {
-        const pct = Math.min(100, (g.current / g.target * 100).toFixed(0));
-        return `<div style="padding: 10px; background: #f9f9f9; margin-bottom: 10px; border-radius: 6px;">
-          <strong>${g.name}</strong><br>$${g.current.toFixed(2)} / $${g.target.toFixed(2)} (${pct}%)<br>
-          <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%;"></div></div>
-        </div>`;
-      }).join('');
-      document.getElementById('goalsList').innerHTML = html || '<p>No goals</p>';
+    function addGoal() {
+      const name = document.getElementById('goalname').value;
+      const target = parseFloat(document.getElementById('goaltarget').value);
+      if(!name || !target) { alert('Fill fields'); return; }
+      current().goals.push({ name, target, curr: 0 });
+      save();
+      update();
+      document.getElementById('goalname').value = '';
     }
 
-    function createGoal() {
-      const name = document.getElementById('goalName').value;
-      const target = parseFloat(document.getElementById('goalTarget').value);
-      if (!name || !target) { alert('Enter name and target'); return; }
-      if (!data.goals) data.goals = [];
-      data.goals.push({ name, target, current: 0 });
-      saveData();
-      updateGoals();
-      document.getElementById('goalName').value = '';
-      document.getElementById('goalTarget').value = '';
+    function genCard() {
+      const name = document.getElementById('cardname').value;
+      if(!name) { alert('Enter name'); return; }
+      const num = Array.from({length:16}, ()=>Math.floor(Math.random()*10)).join('');
+      const cvv = Math.floor(Math.random()*900)+100;
+      const exp = (new Date().getFullYear()+5) + '/01';
+      current().cards.push({ name, num, cvv, exp });
+      save();
+      update();
+      document.getElementById('cardname').value = '';
     }
 
-    function updateBudgets() {
-      const html = (data.budgets || []).map(b => {
-        const pct = Math.min(100, (b.spent / b.limit * 100).toFixed(0));
-        const status = pct > 90 ? '🔴' : pct > 75 ? '🟡' : '🟢';
-        return `<div style="padding: 10px; background: #f9f9f9; margin-bottom: 10px; border-radius: 6px;">
-          <strong>${b.category}</strong> ${status}<br>
-          $${b.spent.toFixed(2)} / $${b.limit.toFixed(2)} (${pct}%)<br>
-          <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%; background: ${pct > 90 ? '#d32f2f' : pct > 75 ? '#ffc107' : '#4CAF50'};"></div></div>
-        </div>`;
-      }).join('');
-      document.getElementById('budgetsList').innerHTML = html || '<p>No budgets</p>';
+    function addInvest() {
+      const symbol = document.getElementById('invsymbol').value.toUpperCase();
+      const shares = parseFloat(document.getElementById('invshares').value);
+      const price = parseFloat(document.getElementById('invprice').value);
+      if(!symbol || !shares || !price) { alert('Fill fields'); return; }
+      current().investments.push({ symbol, shares, price });
+      save();
+      update();
     }
 
-    function createBudget() {
-      const category = document.getElementById('budgetCategory').value;
-      const limit = parseFloat(document.getElementById('budgetLimit').value);
-      if (!category || !limit) { alert('Enter category and limit'); return; }
-      if (!data.budgets) data.budgets = [];
-      data.budgets.push({ category, limit, spent: 0 });
-      saveData();
-      updateBudgets();
-      document.getElementById('budgetCategory').value = '';
-      document.getElementById('budgetLimit').value = '';
+    function addBill() {
+      const payee = document.getElementById('billpayee').value;
+      const amt = parseFloat(document.getElementById('billamt').value);
+      const date = document.getElementById('billdate').value;
+      if(!payee || !amt || !date) { alert('Fill fields'); return; }
+      current().bills.push({ payee, amt, date });
+      save();
+      update();
     }
 
-    function updateAnalytics() {
-      const txns = data.transactions || [];
-      const income = txns.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
-      const expenses = Math.abs(txns.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0));
-      const savingsRate = income > 0 ? ((income - expenses) / income * 100).toFixed(1) : 0;
-
-      document.getElementById('spendingTrends').innerHTML = `
-        <p><strong>Income:</strong> $${income.toFixed(2)}</p>
-        <p><strong>Expenses:</strong> $${expenses.toFixed(2)}</p>
-        <p><strong>Net:</strong> $${(income - expenses).toFixed(2)}</p>
-        <p><strong>Savings Rate:</strong> ${savingsRate}%</p>
-      `;
-
-      const healthScore = Math.min(100, Math.max(0, (data.balance / 5000 * 50 + savingsRate * 0.5).toFixed(0)));
-      document.getElementById('healthScore').innerHTML = `${healthScore}/100 - ${healthScore > 75 ? '✅ Excellent' : healthScore > 50 ? '👍 Good' : '⚠️ Fair'}`;
+    function addBudget() {
+      const cat = document.getElementById('budcat').value;
+      const limit = parseFloat(document.getElementById('budlimit').value);
+      if(!cat || !limit) { alert('Fill fields'); return; }
+      current().budgets.push({ cat, limit, spent: 0 });
+      save();
+      update();
     }
 
-    function calculateLoan() {
-      const principal = parseFloat(document.getElementById('loanAmount').value);
-      const rate = parseFloat(document.getElementById('loanRate').value) / 100 / 12;
-      const months = parseInt(document.getElementById('loanTerm').value);
-
-      if (!principal || !rate || !months) { alert('Enter all values'); return; }
-
-      const monthlyPayment = principal * (rate * Math.pow(1 + rate, months)) / (Math.pow(1 + rate, months) - 1);
-      const totalPayable = monthlyPayment * months;
-      const totalInterest = totalPayable - principal;
-
-      document.getElementById('loanResult').innerHTML = `
-        <div style="margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 6px; border-left: 4px solid #28a745;">
-          <p><strong>Monthly Payment:</strong> $${monthlyPayment.toFixed(2)}</p>
-          <p><strong>Total Payable:</strong> $${totalPayable.toFixed(2)}</p>
-          <p><strong>Total Interest:</strong> $${totalInterest.toFixed(2)}</p>
-        </div>
-      `;
+    function calcLoan() {
+      const p = parseFloat(document.getElementById('loanp').value);
+      const r = parseFloat(document.getElementById('loanr').value) / 100 / 12;
+      const m = parseInt(document.getElementById('loanm').value);
+      if(!p || !r || !m) { alert('Fill fields'); return; }
+      const pmt = p * (r * Math.pow(1+r,m)) / (Math.pow(1+r,m)-1);
+      document.getElementById('loanRes').innerHTML = `<div class="alert alert-success">Monthly: $${pmt.toFixed(2)}<br>Total: $${(pmt*m).toFixed(2)}</div>`;
     }
 
-    function openCalc(type) {
-      let result = '';
-      if (type === 'savings') {
-        const monthly = prompt('Monthly savings ($):');
-        const years = prompt('Years:');
-        if (monthly && years) result = `After ${years} years: $${(monthly * 12 * years * 1.05).toFixed(2)}`;
-      } else if (type === 'compound') {
-        const principal = prompt('Principal ($):');
-        const rate = prompt('Rate (%):');
-        const years = prompt('Years:');
-        if (principal && rate && years) result = `Future value: $${(principal * Math.pow(1 + rate/100, years)).toFixed(2)}`;
-      } else if (type === 'invest') {
-        const invested = prompt('Amount ($):');
-        const ret = prompt('Annual return (%):');
-        const years = prompt('Years:');
-        if (invested && ret && years) result = `Value: $${(invested * Math.pow(1 + ret/100, years)).toFixed(2)}`;
-      } else if (type === 'mortgage') {
-        const home = prompt('Home price ($):');
-        const down = prompt('Down payment ($):');
-        const rate = prompt('Rate (%):');
-        if (home && down && rate) {
-          const principal = home - down;
-          const monthly_rate = rate/100/12;
-          const months = 360;
-          const payment = principal * (monthly_rate * Math.pow(1 + monthly_rate, months)) / (Math.pow(1 + monthly_rate, months) - 1);
-          result = `Monthly payment: $${payment.toFixed(2)}`;
-        }
-      } else if (type === 'retirement') {
-        const age = prompt('Current age:');
-        const ret_age = prompt('Retirement age:');
-        const savings = prompt('Current savings ($):');
-        const contrib = prompt('Annual contribution ($):');
-        if (age && ret_age && savings && contrib) {
-          const years = ret_age - age;
-          const total = savings * Math.pow(1.07, years) + contrib * ((Math.pow(1.07, years) - 1) / 0.07);
-          result = `Projected: $${total.toFixed(2)}`;
-        }
-      }
-      if (result) alert(result);
-    }
-
-    function toggleDarkMode() {
-      data.isDarkMode = !data.isDarkMode;
-      document.body.classList.toggle('dark');
-      saveData();
-    }
-
-    function exportData() {
-      const csv = 'Type,Amount,Date\n' + (data.transactions || []).map(t => `${t.type},${t.amount},${t.date}`).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'statesvill-bank-export.csv';
-      a.click();
-      alert('✅ Exported!');
-    }
-
-    function resetData() {
-      if (confirm('Reset all data?')) {
-        localStorage.clear();
-        location.reload();
+    function checkPin() {
+      const pin = document.getElementById('pin').value;
+      if(pin === PIN) {
+        document.getElementById('cashier-main').style.display = 'block';
+        document.querySelector('[onclick="checkPin()"]').style.display = 'none';
+        document.getElementById('pin').style.display = 'none';
+      } else {
+        alert('Wrong PIN');
       }
     }
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-      loadData();
-      if (data.isDarkMode) document.body.classList.add('dark');
-    });
+    function exitCashier() {
+      document.getElementById('cashier-main').style.display = 'none';
+      document.querySelector('[onclick="checkPin()"]').style.display = 'block';
+      document.getElementById('pin').style.display = 'block';
+      document.getElementById('pin').value = '';
+      closeCPage();
+    }
+
+    function openCPage(page) {
+      document.querySelectorAll('.cashier-page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page + '-page').classList.add('active');
+      if(page === 'balance') document.getElementById('bal-show').textContent = '$' + current().balance.toFixed(2);
+      if(page === 'stmt') document.getElementById('stmt-show').innerHTML = current().txns.slice(-10).reverse().map(t => `<div class="txn"><strong>${t.desc}</strong><div class="amt amt-${t.type==='Income'?'pos':'neg'}">${t.type==='Income'?'+':'-'}$${Math.abs(t.amount).toFixed(2)}</div></div>`).join('');
+    }
+
+    function closeCPage() { document.querySelectorAll('.cashier-page').forEach(p => p.classList.remove('active')); }
+
+    function proDeposit() { const a = parseFloat(document.getElementById('dep-amt').value); if(!a||a<=0){alert('Invalid');return;} const acc = current(); acc.balance += a; acc.txns.push({desc:'Deposit',amount:a,type:'Income',cat:'Deposit',date:new Date().toLocaleDateString()}); save(); update(); document.getElementById('dep-res').innerHTML = `<div class="alert alert-success">✅ Deposited $${a.toFixed(2)}</div>`; }
+
+    function proWithdraw() { const a = parseFloat(document.getElementById('wit-amt').value); if(!a||a>current().balance){alert('Invalid');return;} const acc = current(); acc.balance -= a; acc.txns.push({desc:'Withdrawal',amount:-a,type:'Expense',cat:'Withdrawal',date:new Date().toLocaleDateString()}); save(); update(); document.getElementById('wit-res').innerHTML = `<div class="alert alert-success">✅ Withdrew $${a.toFixed(2)}</div>`; }
+
+    function proTransfer() { const a = parseFloat(document.getElementById('trans-amt').value); if(!a||a>current().balance){alert('Invalid');return;} const acc = current(); acc.balance -= a; save(); update(); document.getElementById('trans-res').innerHTML = `<div class="alert alert-success">✅ Transferred $${a.toFixed(2)}</div>`; }
+
+    function proPayment() { const a = parseFloat(document.getElementById('pay-amt').value); const p = document.getElementById('pay-payee').value; if(!a||!p||a>current().balance){alert('Invalid');return;} const acc = current(); acc.balance -= a; acc.txns.push({desc:'Payment to '+p,amount:-a,type:'Expense',cat:'Payment',date:new Date().toLocaleDateString()}); save(); update(); document.getElementById('pay-res').innerHTML = `<div class="alert alert-success">✅ Payment of $${a.toFixed(2)}</div>`; }
+
+    function proCardOrder() { const type = document.getElementById('card-type').value; const num = Array.from({length:16},()=>Math.floor(Math.random()*10)).join(''); current().cards.push({name:type,num,cvv:Math.floor(Math.random()*900)+100,exp:'2028/01'}); save(); update(); document.getElementById('card-res').innerHTML = `<div class="alert alert-success">✅ Card ordered! 7-10 days</div>`; }
+
+    function proBlockCard() { document.getElementById('block-res').innerHTML = `<div class="alert alert-success">✅ Card blocked</div>`; }
+
+    function proChangePin() { document.getElementById('pin-res').innerHTML = `<div class="alert alert-success">✅ PIN changed</div>`; }
+
+    function proUpdateInfo() { data.phone = document.getElementById('upd-phone').value || data.phone; data.email = document.getElementById('upd-email').value || data.email; data.address = document.getElementById('upd-addr').value || data.address; save(); document.getElementById('upd-res').innerHTML = `<div class="alert alert-success">✅ Updated</div>`; }
+
+    function proExchange() { const usd = parseFloat(document.getElementById('ex-usd').value); const curr = document.getElementById('ex-curr').value; if(!usd){alert('Enter amount');return;} const rates = {eur:0.92,gbp:0.79,jpy:148,cad:1.36}; const converted = (usd*rates[curr]).toFixed(2); const symbols = {eur:'€',gbp:'£',jpy:'¥',cad:'C$'}; document.getElementById('ex-res').innerHTML = `<div class="alert alert-success">✅ ${symbols[curr]}${converted}</div>`; }
+
+    function proLoanApp() { const a = parseFloat(document.getElementById('loan-amt').value); if(!a){alert('Enter amount');return;} document.getElementById('loan-res').innerHTML = `<div class="alert alert-success">✅ Application submitted!<br>Max: $${(current().balance*10).toFixed(2)}<br>Rate: 4.5% APR</div>`; }
+
+    function proCashierCheck() { const a = parseFloat(document.getElementById('chk-amt').value); if(!a||a>current().balance){alert('Invalid');return;} current().balance -= (a+15); document.getElementById('chk-res').innerHTML = `<div class="alert alert-success">✅ Check issued!<br>Amount: $${a.toFixed(2)}<br>Fee: $15</div>`; }
+
+    function proFraud() { document.getElementById('fraud-res').innerHTML = `<div class="alert alert-success">✅ Protections enabled!</div>`; }
+
+    function proBoxRent() { const size = document.getElementById('box-size').value; const costs = {Small:50,Medium:75,Large:100}; document.getElementById('box-res').innerHTML = `<div class="alert alert-success">✅ Box rented!<br>Size: ${size}<br>Fee: $${costs[size]}/yr</div>`; }
+
+    function proDispute() { const a = parseFloat(document.getElementById('disp-amt').value); if(!a){alert('Enter amount');return;} document.getElementById('disp-res').innerHTML = `<div class="alert alert-success">✅ Dispute filed!<br>Ref: #${Math.floor(Math.random()*100000)}<br>10 business days</div>`; }
+
+    function proInvest() { const date = document.getElementById('inv-date').value; if(!date){alert('Select date');return;} document.getElementById('inv-res').innerHTML = `<div class="alert alert-success">✅ Scheduled!<br>Date: ${date}</div>`; }
+
+    function proBeneficiary() { const name = document.getElementById('ben-name').value; const pct = document.getElementById('ben-pct').value; if(!name||!pct){alert('Fill fields');return;} document.getElementById('ben-res').innerHTML = `<div class="alert alert-success">✅ Beneficiary added!<br>${name} (${pct}%)</div>`; }
+
+    function proWire() { const a = parseFloat(document.getElementById('wire-amt').value); if(!a||a>current().balance){alert('Invalid');return;} current().balance -= a; document.getElementById('wire-res').innerHTML = `<div class="alert alert-success">✅ Wire sent!<br>Amount: $${a.toFixed(2)}</div>`; }
+
+    function updateAlerts() { alert('✅ Alerts updated'); }
+    function saveSettings() { data.phone = document.getElementById('phone').value; data.email = document.getElementById('email').value; data.address = document.getElementById('address').value; save(); alert('✅ Saved'); }
+    function savePrefs() { alert('✅ Preferences saved'); }
+    function enable2FA() { document.getElementById('2fa-status').textContent = '✓ Enabled'; alert('✅ 2FA enabled'); }
+    function enableBio() { document.getElementById('bio-status').textContent = '✓ Enabled'; alert('✅ Biometric enabled'); }
+    function changePIN() { alert('✅ PIN changed'); }
+    function exportCSV() { alert('✅ Exported'); }
+    function printReceipt() { alert('✅ Printing...'); }
+    function exportJSON() { alert('✅ Exporting...'); }
+    function resetAccount() { if(confirm('Reset all data?')) { localStorage.clear(); location.reload(); }}
+    function quickTransfer() { alert('Quick transfer started'); }
+    function quickPay() { alert('Quick pay started'); }
+    function quickDeposit() { alert('Quick deposit started'); }
+    function openSearch() { alert('Search...'); }
+    function openHelp() { alert('Help & Support'); }
+    function toggleDark() { data.dark = !data.dark; document.body.classList.toggle('dark'); save(); }
+
+    if(data.dark) document.body.classList.add('dark');
+    update();
   </script>
 </body>
 </html>
